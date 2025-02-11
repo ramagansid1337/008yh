@@ -1,1 +1,106 @@
-ewewe
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BBX-Layer7Stat</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background-color: #121212;
+        color: #ffffff;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      body > div {
+        width: 100%;
+      }
+
+      #chart {
+        width: 80%;
+        margin: auto;
+      }
+
+      #info {
+        margin-top: 2em;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <h2 id="info"></h2>
+      <div id="chart"></div>
+    </div>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script>
+      window.onload = () => {
+        let info = document.getElementById("info");
+
+        let chart = Highcharts.chart("chart", {
+          chart: {
+            type: "area",
+            backgroundColor: "#121212",
+            style: { fontFamily: 'Arial, sans-serif' },
+          },
+          title: {
+            text: "Layer7 (Vercel)",
+            style: { color: "#ffffff" },
+          },
+          xAxis: {
+            type: "datetime",
+            labels: { style: { color: "#ffffff" } },
+          },
+          yAxis: {
+            title: { text: "" },
+            labels: { style: { color: "#ffffff" } },
+            gridLineColor: "#444444",
+          },
+          legend: {
+            itemStyle: { color: "#ffffff" },
+          },
+          plotOptions: {
+            area: {
+              fillColor: "#7b1fa2",
+              marker: { enabled: false },
+              lineWidth: 2,
+              lineColor: "#9c27b0",
+              states: { hover: { enabled: true } },
+            },
+          },
+          series: [
+            {
+              name: "Requests",
+              color: "#9c27b0",
+              data: [],
+            },
+          ],
+          credits: { enabled: false }, // Menghapus watermark
+        });
+
+        info.innerText = "Capturing requests from https://" + location.host + "/hit";
+
+        let ws = new WebSocket(
+          (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/"
+        );
+
+        ws.onmessage = (event) => {
+          let requests = Number(event.data);
+          let time = new Date().getTime();
+          chart.series[0].addPoint([time, requests], true, chart.series[0].points.length > 60);
+        };
+      };
+    </script>
+  </body>
+</html>
